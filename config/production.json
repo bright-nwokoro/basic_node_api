@@ -1,0 +1,13 @@
+{
+    "env_name": "production", 
+    "server": {
+        "port": 5200
+    },
+    "db": {
+        "host": "uri"
+    },
+    "s3": {
+        "region": "us-east-2",
+        "aws_bucket_name": "test-user-images"
+    }
+}

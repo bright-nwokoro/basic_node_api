@@ -1,0 +1,40 @@
+{
+  "name": "js_project",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "local": "nodemon -L index.js",
+    "create-users": "node scripts/create-users.js",
+    "delete-users": "node scripts/delete-users.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "staging": "nodemon --exec \"NODE_ENV=staging node\" index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.281.0",
+    "@godaddy/terminus": "^4.11.2",
+    "aws-sdk": "^2.1322.0",
+    "body-parser": "^1.20.2",
+    "config": "^3.3.9",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
+    "migrate": "^1.8.0",
+    "mongoose": "^6.10.0",
+    "mongoose-to-swagger": "^1.4.0",
+    "multer": "^1.4.5-lts.1",
+    "multer-s3": "^3.0.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^4.6.2",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "migrate-mongo": "^9.0.0",
+    "nodemon": "^2.0.20"
+  }
+}

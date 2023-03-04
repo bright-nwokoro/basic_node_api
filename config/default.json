@@ -1,0 +1,14 @@
+{
+    "env_name": "dev", 
+    "server": {
+        "port": 5200
+    },
+    "db": {
+        "uri": "mongodb://admin:password@mongo:27017"
+    },
+    "s3": {
+        "region": "us-east-2",
+        "aws_bucket_name": "test-user-images",
+        "s3_endpoint": "http://localstack:4566"
+    }
+}

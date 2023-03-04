@@ -1,0 +1,13 @@
+{
+    "env_name": "staging", 
+    "server": {
+        "port": 5210
+    },
+    "db": {
+        "uri": "mongodb+srv://new:LtIbdYCkFGg3rU99@cluster0.gcrex.mongodb.net/?retryWrites=true&w=majority"
+    },
+    "s3": {
+        "region": "us-east-2",
+        "aws_bucket_name": "test-user-images"
+    }
+}
