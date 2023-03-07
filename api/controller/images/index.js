@@ -1,8 +1,7 @@
 import User from "../../model/user/index.js";
-import {
-  generateGetS3PresignedUrl,
-  deleteS3Object,
-} from "../../middlewares/aws/s3/index.js";
+import S3Service from "../../utils/s3/index.js"
+
+const s3Service = new S3Service();
 
 export const createImage = async (req, res) => {
   const userId = req.body.userid;
@@ -31,7 +30,7 @@ export const createImage = async (req, res) => {
 export const fetchImageByKey = async (req, res) => {
   const key = req.params.key;
 
-  const imageURL = await generateGetS3PresignedUrl(key);
+  const imageURL = await s3Service.generatePresignedUrl(key);
 
   return res.status(200).json({
     data: imageURL,
@@ -55,7 +54,7 @@ export const updateImageByUserId = async (req, res) => {
   }
 
   if (req.file && user.profileImage) {
-    deleteS3Object(user.profileImage);
+    s3Service.deletes3Bucket(user.profileImage);
   }
 
   user.profileImage = profileImage;
@@ -82,7 +81,7 @@ export const deleteImageByUserID = async (req, res) => {
   }
 
   if (user.profileImage) {
-    deleteS3Object(user.profileImage);
+    s3Service.deletes3Bucket(user.profileImage);
 
     user.profileImage = "";
     await user.save();

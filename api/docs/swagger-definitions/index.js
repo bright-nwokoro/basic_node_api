@@ -25,13 +25,13 @@ const definition = {
     },
   ],
   components: {
-    securitySchemes: {
-      BearerAuth: {
-        type: "http",
-        scheme: "Bearer",
-        bearerFormat: "JWT",
-      },
-    },
+    // securitySchemes: {
+    //   BearerAuth: {
+    //     type: "http",
+    //     scheme: "Bearer",
+    //     bearerFormat: "JWT",
+    //   },
+    // },
     schemas: {
       "User": swaggerUserSchema,
       "Dog": swaggerDogSchema,

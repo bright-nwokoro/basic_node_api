@@ -1,20 +1,70 @@
 import express from "express";
 
-import S3Service from "../../middlewares/aws/s3/multer.js";
+import S3MulterService from "../../middlewares/multer.js";
 
-import { authMiddleware } from "../../middlewares/auth/index.js";
+// import { authMiddleware } from "../../middlewares/auth/index.js";
 import {
-  signup,
+  createUser,
+  getAllUser,
   fetchUserProfileByID,
   updateUserProfileByID,
   deleteUserProfileByID,
   getUsers,
+  createUserImage,
+  getUserImage,
+  updateUserImage,
+  deleteUserImage,
 } from "../../controller/user/index.js";
 
-const s3Service = new S3Service();
+const s3Service = new S3MulterService();
 const upload = s3Service.getMulterUploadMiddleware();
 
 const router = express.Router();
+
+/**
+ * @swagger
+ * /user/all:
+ *   get:
+ *     summary: GET All user
+ *     description: GET All user
+ 
+ *     tags:
+ *       - User
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                 message:
+ *                   type: string
+ *             example:
+ *               data: {}
+ *               message: User profile has been created successfully
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                 message:
+ *                   type: string
+ *             example:
+ *               data: {}
+ *               message: Custom error message
+ * */
+router.get(
+  "/all",
+  // authMiddleware,
+  getAllUser
+);
 
 /**
  * @swagger
@@ -22,8 +72,7 @@ const router = express.Router();
  *   get:
  *     summary: GET user by QUERIES
  *     description: GET new user by QUERIES
- *     security:
- *       - BearerAuth: []
+ 
  *     tags:
  *       - User
  *     parameters:
@@ -133,21 +182,24 @@ const router = express.Router();
  *               data: {}
  *               message: Server error
  * */
-router.get("/", authMiddleware, getUsers);
+router.get(
+  "/",
+  // authMiddleware,
+  getUsers
+);
 
 /**
  * @swagger
- * /user/{id}:
+ * /user/{userid}:
  *   get:
  *     summary: GET user
  *     description: GET new user
- *     security:
- *       - BearerAuth: []
+ 
  *     tags:
  *       - User
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: userid
  *         description: User ID
  *         type: string
  *         required: true
@@ -174,34 +226,6 @@ router.get("/", authMiddleware, getUsers);
  *             example:
  *               data: {}
  *               message: User profile has been created successfully
- *       201:
- *         description: Created
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   type: object
- *                 message:
- *                   type: string
- *             example:
- *               data: {}
- *               message: User profile has been created successfully
- *       204:
- *         description: No Content
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   type: object
- *                 message:
- *                   type: string
- *             example:
- *               data: {}
- *               message: User profile has been created successfully
  *       400:
  *         description: Bad request
  *         content:
@@ -230,26 +254,16 @@ router.get("/", authMiddleware, getUsers);
  *             example:
  *               data: {}
  *               message: Not Found
- *       500:
- *         description: Server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   type: object
- *                 message:
- *                   type: string
- *             example:
- *               data: {}
- *               message: Server error
  * */
-router.get("/:id", authMiddleware, fetchUserProfileByID);
+router.get(
+  "/:userid",
+  // authMiddleware,
+  fetchUserProfileByID
+);
 
 /**
  * @swagger
- * /user/signup:
+ * /user/create:
  *   post:
  *     summary: CREATE new user
  *     description: CREATE new user
@@ -257,7 +271,7 @@ router.get("/:id", authMiddleware, fetchUserProfileByID);
  *       - User
  *     requestBody:
  *       content:
- *         multipart/form-data:
+ *         application/json:
  *           schema:
  *             type: object
  *             required:
@@ -309,6 +323,142 @@ router.get("/:id", authMiddleware, fetchUserProfileByID);
  *             example:
  *               data: {}
  *               message: User profile has been created successfully
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                 message:
+ *                   type: string
+ *             example:
+ *               data: {}
+ *               message: Custom error message
+ *       404:
+ *         description: Not Found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                 message:
+ *                   type: string
+ *             example:
+ *               data: {}
+ *               message: Not Found
+ * */
+router.post("/create", createUser);
+
+/**
+ * @swagger
+ * /user/{userid}:
+ *   put:
+ *     summary: UPDATE user
+ *     description: UPDATE user
+ 
+ *     tags:
+ *       - User
+ *     parameters:
+ *       - in: path
+ *         name: userid
+ *         description: User ID
+ *         type: string
+ *         required: true
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               firstname:
+ *                 type: string
+ *               lastname:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               gender:
+ *                 type: string
+ *                 enum:
+ *                   - Male
+ *                   - Female
+ *                   - Others
+ *               dob:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                 message:
+ *                   type: string
+ *             example:
+ *               data: {}
+ *               message: User profile has been updated successfully
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                 message:
+ *                   type: string
+ *             example:
+ *               data: {}
+ *               message: Custom error message
+ *       404:
+ *         description: Not Found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                 message:
+ *                   type: string
+ *             example:
+ *               data: {}
+ * */
+router.put(
+  "/:userid",
+  // authMiddleware,
+  updateUserProfileByID
+);
+
+/**
+ * @swagger
+ * /user/{userid}:
+ *   delete:
+ *     summary: DELETE user
+ *     description: DELETE user
+ 
+ *     tags:
+ *       - User
+ *     parameters:
+ *       - in: path
+ *         name: userid
+ *         description: User ID
+ *         type: string
+ *         required: true
+ *     responses:
  *       204:
  *         description: No Content
  *         content:
@@ -351,58 +501,39 @@ router.get("/:id", authMiddleware, fetchUserProfileByID);
  *             example:
  *               data: {}
  *               message: Not Found
- *       500:
- *         description: Server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   type: object
- *                 message:
- *                   type: string
- *             example:
- *               data: {}
- *               message: Server error
  * */
-router.post("/signup", upload.single("profileImage"), signup);
+router.delete(
+  "/:userid",
+  // authMiddleware,
+  deleteUserProfileByID
+);
 
 /**
  * @swagger
- * /user/{id}:
- *   put:
- *     summary: UPDATE user
- *     description: UPDATE user
- *     security:
- *       - BearerAuth: []
+ * /user/{userid}/image:
+ *   post:
+ *     summary: CREATE new images for user
+ *     description: CREATE new images for user
+ 
  *     tags:
  *       - User
+ *     parameters:
+ *       - in: path
+ *         name: userid
+ *         description: User ID
+ *         type: string
+ *         required: true
  *     requestBody:
  *       content:
  *         multipart/form-data:
  *           schema:
  *             type: object
  *             required:
- *               - email
- *               - password
+ *               - profileImage
  *             properties:
- *               firstname:
+ *               profileImage:
  *                 type: string
- *               lastname:
- *                 type: string
- *               email:
- *                 type: string
- *               password:
- *                 type: string
- *               gender:
- *                 type: string
- *                 enum:
- *                   - Male
- *                   - Female
- *                   - Others
- *               dob:
- *                 type: string
+ *                 format: binary
  *     responses:
  *       200:
  *         description: Success
@@ -417,7 +548,7 @@ router.post("/signup", upload.single("profileImage"), signup);
  *                   type: string
  *             example:
  *               data: {}
- *               message: User profile has been updated successfully
+ *               message: Image has been created successfully
  *       201:
  *         description: Created
  *         content:
@@ -431,7 +562,7 @@ router.post("/signup", upload.single("profileImage"), signup);
  *                   type: string
  *             example:
  *               data: {}
- *               message: User profile has been updated successfully
+ *               message: Image has been created successfully
  *       204:
  *         description: No Content
  *         content:
@@ -445,7 +576,7 @@ router.post("/signup", upload.single("profileImage"), signup);
  *                   type: string
  *             example:
  *               data: {}
- *               message: User profile has been created successfully
+ *               message: Image has been created successfully
  *       400:
  *         description: Bad request
  *         content:
@@ -460,55 +591,21 @@ router.post("/signup", upload.single("profileImage"), signup);
  *             example:
  *               data: {}
  *               message: Custom error message
- *       404:
- *         description: Not Found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   type: object
- *                 message:
- *                   type: string
- *             example:
- *               data: {}
- *               message: Not Found
- *       500:
- *         description: Server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   type: object
- *                 message:
- *                   type: string
- *             example:
- *               data: {}
- *               message: Server error
  * */
-router.put(
-  "/:id",
-  authMiddleware,
-  upload.single("profileImage"),
-  updateUserProfileByID
-);
+router.post("/:userid/image", upload.single("profileImage"), createUserImage);
 
 /**
  * @swagger
- * /user/{id}:
- *   delete:
- *     summary: DELETE user
- *     description: DELETE user
- *     security:
- *       - BearerAuth: []
+ * /user/{userid}/image:
+ *   get:
+ *     summary: GET image
+ *     description: GET new image
+ 
  *     tags:
  *       - User
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: userid
  *         description: User ID
  *         type: string
  *         required: true
@@ -526,9 +623,9 @@ router.put(
  *                   type: string
  *             example:
  *               data: {}
- *               message: User profile has been created successfully
- *       201:
- *         description: Created
+ *               message: Image has been retrieved successfully
+ *       404:
+ *         description: Not Found
  *         content:
  *           application/json:
  *             schema:
@@ -540,9 +637,37 @@ router.put(
  *                   type: string
  *             example:
  *               data: {}
- *               message: User profile has been created successfully
- *       204:
- *         description: No Content
+ *               message: Not Found
+ * */
+router.get(
+  "/:userid/image",
+  // authMiddleware,
+  getUserImage
+);
+
+/**
+ * @swagger
+ * /user/{userid}/image:
+ *   put:
+ *     summary: UPDATE user image
+ *     description: UPDATE user image
+ 
+ *     tags:
+ *       - User
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - profileImage
+ *             properties:
+ *               profileImage:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Success
  *         content:
  *           application/json:
  *             schema:
@@ -554,7 +679,7 @@ router.put(
  *                   type: string
  *             example:
  *               data: {}
- *               message: User profile has been created successfully
+ *               message: Image has been updated successfully
  *       400:
  *         description: Bad request
  *         content:
@@ -583,8 +708,32 @@ router.put(
  *             example:
  *               data: {}
  *               message: Not Found
- *       500:
- *         description: Server error
+ * */
+router.put(
+  "/:userid/image",
+  // authMiddleware,
+  upload.single("profileImage"),
+  updateUserImage
+);
+
+/**
+ * @swagger
+ * /user/{userid}/image:
+ *   delete:
+ *     summary: DELETE Image 
+ *     description: DELETE Image
+ 
+ *     tags:
+ *       - User
+ *     parameters:
+ *       - in: path
+ *         name: userid
+ *         description: User ID
+ *         type: string
+ *         required: true
+ *     responses:
+ *       204:
+ *         description: No Content
  *         content:
  *           application/json:
  *             schema:
@@ -596,8 +745,26 @@ router.put(
  *                   type: string
  *             example:
  *               data: {}
- *               message: Server error
+ *               message: User profile has been created successfully
+ *       404:
+ *         description: Not Found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                 message:
+ *                   type: string
+ *             example:
+ *               data: {}
+ *               message: Not Found
  * */
-router.delete("/:id", authMiddleware, deleteUserProfileByID);
+router.delete(
+  "/:userid/image",
+  // authMiddleware,
+  deleteUserImage
+);
 
 export default router;

@@ -1,12 +1,19 @@
 import Dog from "../../model/dog/index.js";
 import User from "../../model/user/index.js";
-import { generateGetS3PresignedUrl } from "../../middlewares/aws/s3/index.js";
+// import S3Service from "../../utils/s3/index.js"
 
 export const newDog = async (req, res) => {
-  const userId = req.id;
+  const userId = req.body.userid;
   const name = req.body.name;
   const dob = req.body.dob;
   const gender = req.body.gender;
+
+  if (!userId) {
+    return res.status(400).json({
+      data: "",
+      message: "User id is required",
+    });
+  }
 
   if (!name) {
     return res.status(400).json({
@@ -20,9 +27,9 @@ export const newDog = async (req, res) => {
   });
 
   if (!user) {
-    return res.status(400).json({
+    return res.status(404).json({
       data: "",
-      message: "Invalid user id",
+      message: "User not found",
     });
   }
 
@@ -80,7 +87,7 @@ export const fetchDogProfileByUserID = async (req, res) => {
 export const fetchDogID = async (req, res) => {
   const id = req.params.id;
 
-  console.log(id)
+  console.log(id);
 
   const dog = await Dog.find({
     id: id,

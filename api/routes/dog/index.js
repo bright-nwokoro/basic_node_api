@@ -1,6 +1,6 @@
 import express from "express";
 
-import { authMiddleware } from "../../middlewares/auth/index.js";
+// import { authMiddleware } from "../../middlewares/auth/index.js";
 import {
   newDog,
   fetchDogProfileByUserID,
@@ -17,8 +17,7 @@ const router = express.Router();
  *   post:
  *     summary: CREATE new dog
  *     description: CREATE new dog
- *     security:
- *       - BearerAuth: []
+ 
  *     tags:
  *       - Dog
  *     requestBody:
@@ -27,8 +26,11 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             required:
+ *               - userid
  *               - name
  *             properties:
+ *               userid:
+ *                 type: string
  *               name:
  *                 type: string
  *               gender:
@@ -55,20 +57,6 @@ const router = express.Router();
  *               message: Dog profile has been created successfully
  *       201:
  *         description: Created
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   type: object
- *                 message:
- *                   type: string
- *             example:
- *               data: {}
- *               message: Dog profile has been created successfully
- *       204:
- *         description: No Content
  *         content:
  *           application/json:
  *             schema:
@@ -109,22 +97,12 @@ const router = express.Router();
  *             example:
  *               data: {}
  *               message: Not Found
- *       500:
- *         description: Server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   type: object
- *                 message:
- *                   type: string
- *             example:
- *               data: {}
- *               message: Server error
  * */
-router.post("/create", authMiddleware, newDog);
+router.post(
+  "/create",
+  // authMiddleware,
+  newDog
+);
 
 /**
  * @swagger
@@ -132,8 +110,7 @@ router.post("/create", authMiddleware, newDog);
  *   get:
  *     summary: GET dog
  *     description: GET new dog
- *     security:
- *       - BearerAuth: []
+ 
  *     tags:
  *       - Dog
  *     parameters:
@@ -228,7 +205,11 @@ router.post("/create", authMiddleware, newDog);
  *               data: {}
  *               message: Server error
  * */
-router.get("/:userid", authMiddleware, fetchDogProfileByUserID);
+router.get(
+  "/:userid",
+  // authMiddleware,
+  fetchDogProfileByUserID
+);
 
 /**
  * @swagger
@@ -236,8 +217,7 @@ router.get("/:userid", authMiddleware, fetchDogProfileByUserID);
  *   get:
  *     summary: GET dog by ID
  *     description: GET dog by ID
- *     security:
- *       - BearerAuth: []
+ 
  *     tags:
  *       - Dog
  *     parameters:
@@ -332,7 +312,11 @@ router.get("/:userid", authMiddleware, fetchDogProfileByUserID);
  *               data: {}
  *               message: Server error
  * */
-router.get("/:id", authMiddleware, fetchDogID);
+router.get(
+  "/:id",
+  // authMiddleware,
+  fetchDogID
+);
 
 /**
  * @swagger
@@ -340,8 +324,7 @@ router.get("/:id", authMiddleware, fetchDogID);
  *   put:
  *     summary: UPDATE dog
  *     description: UPDATE dog
- *     security:
- *       - BearerAuth: []
+ 
  *     tags:
  *       - Dog
  *     requestBody:
@@ -447,7 +430,11 @@ router.get("/:id", authMiddleware, fetchDogID);
  *               data: {}
  *               message: Server error
  * */
-router.put("/:id", authMiddleware, updateDogByID);
+router.put(
+  "/:id",
+  // authMiddleware,
+  updateDogByID
+);
 
 /**
  * @swagger
@@ -455,8 +442,7 @@ router.put("/:id", authMiddleware, updateDogByID);
  *   delete:
  *     summary: DELETE dog
  *     description: DELETE dog
- *     security:
- *       - BearerAuth: []
+ 
  *     tags:
  *       - Dog
  *     parameters:
@@ -551,6 +537,10 @@ router.put("/:id", authMiddleware, updateDogByID);
  *               data: {}
  *               message: Server error
  * */
-router.delete("/:id", authMiddleware, deleteDogProfileByID);
+router.delete(
+  "/:id",
+  // authMiddleware,
+  deleteDogProfileByID
+);
 
 export default router;

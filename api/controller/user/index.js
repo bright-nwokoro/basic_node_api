@@ -1,14 +1,15 @@
 import User from "../../model/user/index.js";
-import { generateGetS3PresignedUrl } from "../../middlewares/aws/s3/index.js";
+import S3Service from "../../utils/s3/index.js";
 
-export const signup = async (req, res) => {
+const s3Service = new S3Service();
+
+export const createUser = async (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   const firstName = req.body.firstname;
   const lastName = req.body.lastname;
   const gender = req.body.gender;
   const dob = req.body.dob;
-  // const profileImage = req.file ? req.file.key : "";
 
   if (!email || !password) {
     return res.status(400).json({
@@ -24,7 +25,6 @@ export const signup = async (req, res) => {
     gender: gender,
     password: password,
     dob: dob,
-    // profileImage: profileImage,
   })
     .then((user) => {
       return res.status(201).json({
@@ -40,8 +40,17 @@ export const signup = async (req, res) => {
     });
 };
 
+export const getAllUser = async (req, res) => {
+  const user = await User.find({});
+
+  return res.status(200).json({
+    data: user,
+    message: "All user has been successfully retrieved",
+  });
+};
+
 export const fetchUserProfileByID = async (req, res) => {
-  const id = req.params.id;
+  const id = req.params.userid;
   const summary = req.query.summary;
   const full = req.query.full;
 
@@ -80,7 +89,7 @@ export const fetchUserProfileByID = async (req, res) => {
 };
 
 export const updateUserProfileByID = async (req, res) => {
-  const id = req.params.id;
+  const id = req.params.userid;
 
   const user = await User.findOne({
     id: id,
@@ -99,7 +108,6 @@ export const updateUserProfileByID = async (req, res) => {
   const lastName = req.body.lastname;
   const gender = req.body.gender;
   const dob = req.body.dob;
-  // const profileImage = req.file ? req.file.key : "";
 
   user.email = email ? email : user.email;
   user.password = password ? password : user.password;
@@ -107,7 +115,6 @@ export const updateUserProfileByID = async (req, res) => {
   user.lastName = lastName ? lastName : user.lastName;
   user.gender = gender ? gender : user.gender;
   user.dob = dob ? dob : user.dob;
-  // user.profileImage = profileImage ? profileImage : user.profileImage;
 
   await user.save().then((user) => {
     return res.status(200).json({
@@ -118,7 +125,7 @@ export const updateUserProfileByID = async (req, res) => {
 };
 
 export const deleteUserProfileByID = async (req, res) => {
-  const id = req.params.id;
+  const id = req.params.userid;
 
   const user = await User.findOne({
     id: id,
@@ -148,7 +155,6 @@ export const deleteUserProfileByID = async (req, res) => {
     });
 };
 
-// GET /users
 export const getUsers = async (req, res) => {
   try {
     const {
@@ -212,4 +218,134 @@ export const getUsers = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+};
+
+export const createUserImage = async (req, res) => {
+  const userId = req.params.userid;
+  const profileImage = req.file ? req.file.key : "";
+
+  const user = await User.findOne({
+    id: userId,
+  });
+
+  if (!req.file) {
+    return res.status(400).json({
+      data: "",
+      message: "Unsupported Image format.",
+    });
+  }
+
+  if (!user) {
+    return res.status(400).json({
+      data: "",
+      message: "Invalid user",
+    });
+  }
+
+  user.profileImage = profileImage;
+  await user.save();
+
+  return res.status(200).json({
+    data: req.file.key,
+    message: "Image create successfully",
+  });
+};
+
+export const getUserImage = async (req, res) => {
+  const userId = req.params.userid;
+
+  const user = await User.findOne({
+    id: userId,
+  });
+
+  if (!user) {
+    return res.status(404).json({
+      data: "",
+      message: "User not found",
+    });
+  }
+
+  if (!user.profileImage || user.profileImage.length < 0) {
+    return res.status(404).json({
+      data: "",
+      message: "No image was found for this user",
+    });
+  }
+
+  const imageURL = await s3Service.generatePresignedUrl(user.profileImage);
+
+  return res.status(200).json({
+    data: {
+      imagekey: user.profileImage,
+      presignedurl: imageURL,
+    },
+    message: "Image retrieved successfully",
+  });
+};
+
+export const updateUserImage = async (req, res) => {
+  const userId = req.body.userid;
+  const profileImage = req.file ? req.file.key : "";
+
+  const user = await User.findOne({
+    id: userId,
+  });
+
+  if (!req.file) {
+    return res.status(400).json({
+      data: "",
+      message: "Unsupported Image format.",
+    });
+  }
+
+  if (!user) {
+    return res.status(404).json({
+      data: "",
+      message: "User not found",
+    });
+  }
+
+  if (req.file && user.profileImage) {
+    s3Service.deletes3Bucket(user.profileImage);
+  }
+
+  user.profileImage = profileImage;
+  await user.save();
+
+  return res.status(200).json({
+    data: req.file.key,
+    message: "Image create successfully",
+  });
+};
+
+export const deleteUserImage = async (req, res) => {
+  const userId = req.parms.userid;
+
+  const user = await User.findOne({
+    id: userId,
+  });
+
+  if (!user) {
+    return res.status(404).json({
+      data: "",
+      message: "No user was found",
+    });
+  }
+
+  if (user.profileImage) {
+    s3Service.deletes3Bucket(user.profileImage);
+
+    user.profileImage = "";
+    await user.save();
+
+    return res.status(204).json({
+      data: "",
+      message: "Image deleted successfully",
+    });
+  }
+
+  return res.status(404).json({
+    data: "",
+    message: "No image was found for this user",
+  });
 };

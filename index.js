@@ -8,13 +8,16 @@ import { createTerminus } from "@godaddy/terminus";
 import swaggerUi from "swagger-ui-express";
 import swaggerJsdoc from "swagger-jsdoc";
 
-import S3Service from "./api/middlewares/aws/s3/multer.js";
+import S3MulterService from "./api/middlewares/multer.js";
+import S3Service from "./api/utils/s3/index.js";
+
 // import createMigrationAndRunMigrations from "./api/model/migrations/index.js"
 
-import loginRoutes from "./api/routes/auth/login.js";
+// import loginRoutes from "./api/routes/auth/login.js";
 import userRoutes from "./api/routes/user/index.js";
 import dogRoutes from "./api/routes/dog/index.js";
-import imagesRoutes from "./api/routes/images/index.js";
+// import imagesRoutes from "./api/routes/images/index.js";
+
 import swaggerOptions from "./api/docs/swagger-definitions/index.js";
 
 dotenv.config();
@@ -58,7 +61,27 @@ const startServer = async () => {
   }
 
   const s3Service = new S3Service();
-  s3Service.client;
+  s3Service
+    .isS3BucketNameExist()
+    .then((result) => {
+      switch (result) {
+        case "error":
+          console.log("Unable to create S3 Bucket");
+          break;
+        case "yes":
+          console.log("Bucket already exists. Skipping...");
+          break;
+        case "does not exist":
+          s3Service.createS3Bucket();
+          break;
+      }
+    })
+    .catch((err) => {
+      console.log("Error: ", err);
+    });
+
+  // const s3MulterService = new S3MulterService();
+  // s3MulterService.client;
 
   // Call script to create migration file and run migrations
   // createMigrationAndRunMigrations()
@@ -118,7 +141,7 @@ const endServer = async (signal) => {
     console.log(
       `Deleting ${objects.Contents.length} objects from S3 bucket ${S3_BUCKET_NAME}...`
     );
-    const s3Service = new S3Service();
+    const s3Service = new S3MulterService();
     s3Service.deleteAllObjects;
 
     console.log("Server shutting down.");
@@ -150,9 +173,9 @@ app.use("/docs/:id", swaggerUi.serve, (req, res) => {
 });
 
 app.use("/user", userRoutes);
-app.use("/login", loginRoutes);
 app.use("/dog", dogRoutes);
-app.use("/images", imagesRoutes);
+// app.use("/login", loginRoutes);
+// app.use("/images", imagesRoutes);
 
 process.on("SIGINT", () => {
   endServer("SIGINT");
