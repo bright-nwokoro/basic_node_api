@@ -96,6 +96,10 @@ router.get(
  *         name: fullName
  *         description: Full Name
  *         type: string
+ *       - in: query
+ *         name: format
+ *         description: Summary/Full
+ *         type: string
  *     responses:
  *       200:
  *         description: Success
@@ -188,78 +192,78 @@ router.get(
   getUsers
 );
 
-/**
- * @swagger
- * /user/{userid}:
- *   get:
- *     summary: GET user
- *     description: GET new user
+// /**
+//  * @swagger
+//  * /user/{userid}:
+//  *   get:
+//  *     summary: GET user
+//  *     description: GET new user
  
- *     tags:
- *       - User
- *     parameters:
- *       - in: path
- *         name: userid
- *         description: User ID
- *         type: string
- *         required: true
- *       - in: query
- *         name: summary
- *         description: Summary of User Information. Enter true or false
- *         type: string
- *       - in: query
- *         name: full
- *         description: Full User Information. Enter true or false
- *         type: string
- *     responses:
- *       200:
- *         description: Success
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   type: object
- *                 message:
- *                   type: string
- *             example:
- *               data: {}
- *               message: User profile has been created successfully
- *       400:
- *         description: Bad request
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   type: object
- *                 message:
- *                   type: string
- *             example:
- *               data: {}
- *               message: Custom error message
- *       404:
- *         description: Not Found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   type: object
- *                 message:
- *                   type: string
- *             example:
- *               data: {}
- *               message: Not Found
- * */
-router.get(
-  "/:userid",
-  // authMiddleware,
-  fetchUserProfileByID
-);
+//  *     tags:
+//  *       - User
+//  *     parameters:
+//  *       - in: path
+//  *         name: userid
+//  *         description: User ID
+//  *         type: string
+//  *         required: true
+//  *       - in: query
+//  *         name: summary
+//  *         description: Summary of User Information. Enter true or false
+//  *         type: string
+//  *       - in: query
+//  *         name: full
+//  *         description: Full User Information. Enter true or false
+//  *         type: string
+//  *     responses:
+//  *       200:
+//  *         description: Success
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               type: object
+//  *               properties:
+//  *                 data:
+//  *                   type: object
+//  *                 message:
+//  *                   type: string
+//  *             example:
+//  *               data: {}
+//  *               message: User profile has been created successfully
+//  *       400:
+//  *         description: Bad request
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               type: object
+//  *               properties:
+//  *                 data:
+//  *                   type: object
+//  *                 message:
+//  *                   type: string
+//  *             example:
+//  *               data: {}
+//  *               message: Custom error message
+//  *       404:
+//  *         description: Not Found
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               type: object
+//  *               properties:
+//  *                 data:
+//  *                   type: object
+//  *                 message:
+//  *                   type: string
+//  *             example:
+//  *               data: {}
+//  *               message: Not Found
+//  * */
+// router.get(
+//   "/:userid",
+//   // authMiddleware,
+//   fetchUserProfileByID
+// );
 
 /**
  * @swagger

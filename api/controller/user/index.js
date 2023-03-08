@@ -223,11 +223,23 @@ export const getUsers = async (req, res) => {
     // calculate page and pageCount
     const pageCount = Math.ceil(totalCount / limit);
 
+    let data;
+    if (req.query.format === "summary") {
+      data = users.map((user) => {
+        return {
+          fullName: `${user.firstName} ${user.lastName}`,
+          imageKeys: user.profileImages,
+        };
+      });
+    } else {
+      data = users;
+    }
+
     res.status(200).json({
       page,
       pageCount,
       totalCount,
-      users,
+      data,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -286,12 +298,24 @@ export const getUserImage = async (req, res) => {
     });
   }
 
-  const imageURL = await s3Service.generatePresignedUrl(user.profileImages);
+  const images = user.profileImages;
+
+  const imageURLs = [];
+
+  for (const image of images) {
+    imageURLs.push(await s3Service.generatePresignedUrl(image));
+  }
+
+  // user.profileImages.map(async (image) => {
+  //   imageURLs.push(await s3Service.generatePresignedUrl(image));
+  // });
+
+  // const imageURL = await s3Service.generatePresignedUrl(user.profileImages);
 
   return res.status(200).json({
     data: {
       imagekey: user.profileImages,
-      presignedurl: imageURL,
+      presignedurl: imageURLs,
     },
     message: "Image retrieved successfully",
   });
