@@ -64,9 +64,21 @@ userSchema.virtual("fullName").get(function () {
 });
 
 userSchema.virtual("age").get(function () {
-  const birthYear = new Date(this.dob).getFullYear();
-  const currentYear = new Date().getFullYear();
-  return currentYear - birthYear;
+  const birthDate = new Date(this.dob);
+  const currentDate = new Date();
+  let age = currentDate.getFullYear() - birthDate.getFullYear();
+
+  // Check if the user has not had their birthday yet this year
+  const isBeforeBirthday =
+    currentDate.getMonth() < birthDate.getMonth() ||
+    (currentDate.getMonth() === birthDate.getMonth() &&
+      currentDate.getDate() < birthDate.getDate());
+
+  if (isBeforeBirthday) {
+    age--;
+  }
+
+  return age;
 });
 
 const User = mongoose.model("User", userSchema);
