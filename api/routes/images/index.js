@@ -1,19 +1,19 @@
-// import express from "express";
+import express from "express";
 
-// import S3MulterService from "../../middlewares/multer.js";
+import S3MulterService from "../../middlewares/multer.js";
 
-// import { authMiddleware } from "../../middlewares/auth/index.js";
-// import {
-//   createImage,
-//   fetchImageByKey,
-//   updateImageByUserId,
-//   deleteImageByUserID,
-// } from "../../controller/images/index.js";
+import { authMiddleware } from "../../middlewares/auth/index.js";
+import {
+  //   createImage,
+  fetchImageByKey,
+  //   updateImageByUserId,
+  //   deleteImageByUserID,
+} from "../../controller/images/index.js";
 
-// const s3Service = new S3MulterService();
+const s3Service = new S3MulterService();
 // const upload = s3Service.getMulterUploadMiddleware();
 
-// const router = express.Router();
+const router = express.Router();
 
 // /**
 //  * @swagger
@@ -21,7 +21,7 @@
 //  *   post:
 //  *     summary: CREATE new images for user
 //  *     description: CREATE new images for user
- 
+
 //  *     tags:
 //  *       - Image
 //  *     requestBody:
@@ -34,7 +34,7 @@
 //  *             properties:
 //  *               userid:
 //  *                 type: string
-//  *               profileImage:
+//  *               profileImages:
 //  *                 type: string
 //  *                 format: binary
 //  *     responses:
@@ -123,110 +123,86 @@
 //  *               data: {}
 //  *               message: Server error
 //  * */
-// router.post("/create", upload.single("profileImage"), createImage);
+// router.post("/create", upload.single("profileImages"), createImage);
 
-// /**
-//  * @swagger
-//  * /images/{key}:
-//  *   get:
-//  *     summary: GET image
-//  *     description: GET new image
+/**
+ * @swagger
+ * /images/{key}:
+ *   get:
+ *     summary: Redirects to another Image URL
+ *     description: Redirects to another URL
  
-//  *     tags:
-//  *       - Image
-//  *     parameters:
-//  *       - in: path
-//  *         name: key
-//  *         description: Key
-//  *         type: string
-//  *         required: true
-//  *     responses:
-//  *       200:
-//  *         description: Success
-//  *         content:
-//  *           application/json:
-//  *             schema:
-//  *               type: object
-//  *               properties:
-//  *                 data:
-//  *                   type: object
-//  *                 message:
-//  *                   type: string
-//  *             example:
-//  *               data: {}
-//  *               message: Image has been retrieved successfully
-//  *       201:
-//  *         description: Created
-//  *         content:
-//  *           application/json:
-//  *             schema:
-//  *               type: object
-//  *               properties:
-//  *                 data:
-//  *                   type: object
-//  *                 message:
-//  *                   type: string
-//  *             example:
-//  *               data: {}
-//  *               message: Image has been retrieved successfully
-//  *       204:
-//  *         description: No Content
-//  *         content:
-//  *           application/json:
-//  *             schema:
-//  *               type: object
-//  *               properties:
-//  *                 data:
-//  *                   type: object
-//  *                 message:
-//  *                   type: string
-//  *             example:
-//  *               data: {}
-//  *               message: Image has been retrieved successfully
-//  *       400:
-//  *         description: Bad request
-//  *         content:
-//  *           application/json:
-//  *             schema:
-//  *               type: object
-//  *               properties:
-//  *                 data:
-//  *                   type: object
-//  *                 message:
-//  *                   type: string
-//  *             example:
-//  *               data: {}
-//  *               message: Custom error message
-//  *       404:
-//  *         description: Not Found
-//  *         content:
-//  *           application/json:
-//  *             schema:
-//  *               type: object
-//  *               properties:
-//  *                 data:
-//  *                   type: object
-//  *                 message:
-//  *                   type: string
-//  *             example:
-//  *               data: {}
-//  *               message: Not Found
-//  *       500:
-//  *         description: Server error
-//  *         content:
-//  *           application/json:
-//  *             schema:
-//  *               type: object
-//  *               properties:
-//  *                 data:
-//  *                   type: object
-//  *                 message:
-//  *                   type: string
-//  *             example:
-//  *               data: {}
-//  *               message: Server error
-//  * */
-// router.get("/:key", authMiddleware, fetchImageByKey);
+ *     tags:
+ *       - Image
+ *     parameters:
+ *       - in: path
+ *         name: key
+ *         description: Key
+ *         type: string
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                 message:
+ *                   type: string
+ *             example:
+ *               data: {}
+ *               message: Image has been retrieved successfully
+ *       302:
+ *         description: Temp Redirect
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                 message:
+ *                   type: string
+ *             example:
+ *               data: {}
+ *               message: Redirecting
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                 message:
+ *                   type: string
+ *             example:
+ *               data: {}
+ *               message: Custom error message
+ *       404:
+ *         description: Not Found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                 message:
+ *                   type: string
+ *             example:
+ *               data: {}
+ *               message: Not Found
+ * */
+router.get(
+  "/:key",
+  // authMiddleware,
+  fetchImageByKey
+);
 
 // /**
 //  * @swagger
@@ -234,7 +210,7 @@
 //  *   put:
 //  *     summary: UPDATE user
 //  *     description: UPDATE user
- 
+
 //  *     tags:
 //  *       - User
 //  *     requestBody:
@@ -247,7 +223,7 @@
 //  *             properties:
 //  *               userid:
 //  *                 type: string
-//  *               profileImage:
+//  *               profileImages:
 //  *                 type: string
 //  *                 format: binary
 //  *     responses:
@@ -339,7 +315,7 @@
 // router.put(
 //   "/:userid",
 //   authMiddleware,
-//   upload.single("profileImage"),
+//   upload.single("profileImages"),
 //   updateImageByUserId
 // );
 
@@ -349,7 +325,7 @@
 //  *   delete:
 //  *     summary: DELETE Image
 //  *     description: DELETE Image
- 
+
 //  *     tags:
 //  *       - Image
 //  *     parameters:
@@ -446,4 +422,4 @@
 //  * */
 // router.delete("/:userid", authMiddleware, deleteImageByUserID);
 
-// export default router;
+export default router;

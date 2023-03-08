@@ -3,97 +3,96 @@ import S3Service from "../../utils/s3/index.js"
 
 const s3Service = new S3Service();
 
-export const createImage = async (req, res) => {
-  const userId = req.body.userid;
-  const profileImage = req.file ? req.file.key : "";
+// export const createImage = async (req, res) => {
+//   const userId = req.body.userid;
+//   const profileImages = req.file ? req.file.key : "";
 
-  const user = await User.findOne({
-    id: userId,
-  });
+//   const user = await User.findOne({
+//     id: userId,
+//   });
 
-  if (!user) {
-    return res.status(400).json({
-      data: "",
-      message: "Invalid user",
-    });
-  }
+//   if (!user) {
+//     return res.status(400).json({
+//       data: "",
+//       message: "Invalid user",
+//     });
+//   }
 
-  user.profileImage = profileImage;
-  await user.save();
+//   user.profileImages = profileImages;
+//   await user.save();
 
-  return res.status(200).json({
-    data: "",
-    message: "Image create successfully",
-  });
-};
+//   return res.status(200).json({
+//     data: "",
+//     message: "Image create successfully",
+//   });
+// };
 
 export const fetchImageByKey = async (req, res) => {
   const key = req.params.key;
 
   const imageURL = await s3Service.generatePresignedUrl(key);
 
-  return res.status(200).json({
-    data: imageURL,
-    message: "Image retrieved successfully",
-  });
+  // Temporary redirect to the generated URL
+  res.redirect(302, imageURL);
 };
 
-export const updateImageByUserId = async (req, res) => {
-  const userId = req.params.userid;
-  const profileImage = req.file ? req.file.key : "";
 
-  const user = await User.findOne({
-    id: userId,
-  });
+// export const updateImageByUserId = async (req, res) => {
+//   const userId = req.params.userid;
+//   const profileImages = req.file ? req.file.key : "";
 
-  if (!user) {
-    return res.status(400).json({
-      data: "",
-      message: "Invalid user",
-    });
-  }
+//   const user = await User.findOne({
+//     id: userId,
+//   });
 
-  if (req.file && user.profileImage) {
-    s3Service.deletes3Bucket(user.profileImage);
-  }
+//   if (!user) {
+//     return res.status(400).json({
+//       data: "",
+//       message: "Invalid user",
+//     });
+//   }
 
-  user.profileImage = profileImage;
-  await user.save();
+//   if (req.file && user.profileImages) {
+//     s3Service.deletes3Bucket(user.profileImages);
+//   }
 
-  return res.status(200).json({
-    data: "",
-    message: "Image updated successfully",
-  });
-};
+//   user.profileImages = profileImages;
+//   await user.save();
 
-export const deleteImageByUserID = async (req, res) => {
-  const userId = req.parms.userid;
+//   return res.status(200).json({
+//     data: "",
+//     message: "Image updated successfully",
+//   });
+// };
 
-  const user = await User.findOne({
-    id: userId,
-  });
+// export const deleteImageByUserID = async (req, res) => {
+//   const userId = req.parms.userid;
 
-  if (!user) {
-    return res.status(404).json({
-      data: "",
-      message: "No user was found",
-    });
-  }
+//   const user = await User.findOne({
+//     id: userId,
+//   });
 
-  if (user.profileImage) {
-    s3Service.deletes3Bucket(user.profileImage);
+//   if (!user) {
+//     return res.status(404).json({
+//       data: "",
+//       message: "No user was found",
+//     });
+//   }
 
-    user.profileImage = "";
-    await user.save();
+//   if (user.profileImages) {
+//     s3Service.deletes3Bucket(user.profileImages);
 
-    return res.status(204).json({
-      data: "",
-      message: "Image deleted successfully",
-    });
-  }
+//     user.profileImages = "";
+//     await user.save();
 
-  return res.status(404).json({
-    data: "",
-    message: "No image was found for this user",
-  });
-};
+//     return res.status(204).json({
+//       data: "",
+//       message: "Image deleted successfully",
+//     });
+//   }
+
+//   return res.status(404).json({
+//     data: "",
+//     message: "No image was found for this user",
+//   });
+// };

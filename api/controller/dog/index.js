@@ -1,6 +1,8 @@
 import Dog from "../../model/dog/index.js";
 import User from "../../model/user/index.js";
-// import S3Service from "../../utils/s3/index.js"
+import S3Service from "../../utils/s3/index.js";
+
+const s3Service = S3Service();
 
 export const newDog = async (req, res) => {
   const userId = req.body.userid;
@@ -33,24 +35,28 @@ export const newDog = async (req, res) => {
     });
   }
 
-  await Dog.create({
-    name: name,
-    userId: user._id,
-    gender: gender,
-    dob: dob,
-  })
-    .then((dog) => {
-      return res.status(201).json({
-        data: dog,
-        message: "Dog profile created for user successfully",
-      });
-    })
-    .catch((err) => {
-      return res.status(500).json({
-        data: err.message,
-        message: "Unable to create new dog",
-      });
+  try {
+    const dog = new Dog({
+      name: name,
+      gender: gender,
+      dob: dob,
     });
+
+    await dog.save().then(async () => {
+      user.dogIds.push(dog._id);
+      await user.save();
+    });
+
+    return res.status(201).json({
+      data: dog,
+      message: "Dog profile created for user successfully",
+    });
+  } catch (error) {
+    return res.status(400).json({
+      data: "",
+      message: error.message,
+    });
+  }
 };
 
 export const fetchDogProfileByUserID = async (req, res) => {
@@ -58,7 +64,7 @@ export const fetchDogProfileByUserID = async (req, res) => {
 
   const user = await User.findOne({
     id: userId,
-  });
+  }).populate("dogIds");
 
   if (!user) {
     return res.status(400).json({
@@ -67,27 +73,14 @@ export const fetchDogProfileByUserID = async (req, res) => {
     });
   }
 
-  const dog = await Dog.find({
-    userId: user._id,
-  }).populate("userId");
-
-  if (!dog) {
-    return res.status(404).json({
-      data: "",
-      message: "No dog was found for this user",
-    });
-  }
-
   return res.status(200).json({
-    data: dog,
-    message: "Dog profile retrieved successfully",
+    data: user,
+    message: "Dog belonging to user's profile retrieved successfully",
   });
 };
 
 export const fetchDogID = async (req, res) => {
   const id = req.params.id;
-
-  console.log(id);
 
   const dog = await Dog.find({
     id: id,
@@ -165,4 +158,156 @@ export const deleteDogProfileByID = async (req, res) => {
         message: "Unable to delete Dog profile",
       });
     });
+};
+
+export const createDogImage = async (req, res) => {
+  const dogId = req.body.dogid;
+  const profileImages = req.files ? req.files.map((file) => file.key) : "";
+
+  const dog = await Dog.findOne({
+    id: dogId,
+  });
+
+  if (!req.files) {
+    return res.status(400).json({
+      data: "",
+      message: "Unsupported Image format.",
+    });
+  }
+
+  if (!dog) {
+    return res.status(400).json({
+      data: "",
+      message: "Invalid dog",
+    });
+  }
+
+  dog.profileImages = profileImages;
+  await dog.save();
+
+  return res.status(200).json({
+    data: profileImages,
+    message: "Image create successfully",
+  });
+};
+
+export const getDogImage = async (req, res) => {
+  const dogId = req.params.dogid;
+
+  const dog = await Dog.findOne({
+    id: dogId,
+  });
+
+  if (!dog) {
+    return res.status(404).json({
+      data: "",
+      message: "Dog not found",
+    });
+  }
+
+  if (!dog.profileImages || dog.profileImages.length < 0) {
+    return res.status(404).json({
+      data: "",
+      message: "No image was found for this dog",
+    });
+  }
+
+  const imageURLs = [];
+
+  dog.profileImages.map(async (image) => {
+    imageURLs.push(await s3Service.generatePresignedUrl(image));
+  });
+  // const imageURL = await s3Service.generatePresignedUrl(dog.profileImages);
+
+  return res.status(200).json({
+    data: {
+      imagekey: dog.profileImages,
+      presignedurl: imageURLs,
+    },
+    message: "Image retrieved successfully",
+  });
+};
+
+export const updateDogImage = async (req, res) => {
+  const dogId = req.body.dogid;
+  const previousImageKey = req.body.previousimagekey;
+  const newImageKey = req.file ? req.file.key : null;
+
+  const dog = await Dog.findOne({
+    id: dogId,
+  });
+
+  if (!previousImageKey) {
+    return res.status(400).json({
+      data: "",
+      message: "Please include previous image key.",
+    });
+  }
+
+  if (!req.file) {
+    return res.status(400).json({
+      data: "",
+      message: "Unsupported Image format.",
+    });
+  }
+
+  if (!dog) {
+    return res.status(404).json({
+      data: "",
+      message: "Dog not found",
+    });
+  }
+
+  if (dog.profileImages) {
+    const index = dog.profileImages.findIndex(
+      (key) => key === previousImageKey
+    );
+    if (index !== -1) {
+      s3Service.deletes3Bucket([previousImageKey]);
+      dog.profileImages.splice(index, 1, newImageKey);
+    } else {
+      dog.profileImages.push(newImageKey);
+    }
+  } else {
+    dog.profileImages = [newImageKey];
+  }
+
+  await dog.save();
+
+  return res.status(200).json({
+    data: newImageKey,
+    message: "Image updated successfully",
+  });
+};
+
+export const deleteDogImage = async (req, res) => {
+  const dogId = req.parms.dogid;
+
+  const dog = await Dog.findOne({
+    id: dogId,
+  });
+
+  if (!dog) {
+    return res.status(404).json({
+      data: "",
+      message: "No dog was found",
+    });
+  }
+
+  if (dog.profileImages) {
+    s3Service.deletes3Bucket(`dogs/${dogId}`);
+
+    dog.profileImages = "";
+    await dog.save();
+
+    return res.status(204).json({
+      data: "",
+      message: "Image deleted successfully",
+    });
+  }
+
+  return res.status(404).json({
+    data: "",
+    message: "No image was found for this dog",
+  });
 };

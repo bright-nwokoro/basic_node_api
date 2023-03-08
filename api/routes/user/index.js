@@ -295,20 +295,6 @@ router.get(
  *               dob:
  *                 type: string
  *     responses:
- *       200:
- *         description: Success
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   type: object
- *                 message:
- *                   type: string
- *             example:
- *               data: {}
- *               message: User profile has been created successfully
  *       201:
  *         description: Created
  *         content:
@@ -337,20 +323,6 @@ router.get(
  *             example:
  *               data: {}
  *               message: Custom error message
- *       404:
- *         description: Not Found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   type: object
- *                 message:
- *                   type: string
- *             example:
- *               data: {}
- *               message: Not Found
  * */
 router.post("/create", createUser);
 
@@ -517,23 +489,22 @@ router.delete(
  
  *     tags:
  *       - User
- *     parameters:
- *       - in: path
- *         name: userid
- *         description: User ID
- *         type: string
- *         required: true
  *     requestBody:
  *       content:
  *         multipart/form-data:
  *           schema:
  *             type: object
  *             required:
- *               - profileImage
+ *               - userid
+ *               - users
  *             properties:
- *               profileImage:
+ *               userid:
  *                 type: string
- *                 format: binary
+ *               users:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
  *     responses:
  *       200:
  *         description: Success
@@ -592,7 +563,7 @@ router.delete(
  *               data: {}
  *               message: Custom error message
  * */
-router.post("/:userid/image", upload.single("profileImage"), createUserImage);
+router.post("/:userid/image", upload.array("users"), createUserImage);
 
 /**
  * @swagger
@@ -660,11 +631,16 @@ router.get(
  *           schema:
  *             type: object
  *             required:
- *               - profileImage
+ *               - users
+ *               - previousimagekey
  *             properties:
- *               profileImage:
+ *               previousimagekey:
  *                 type: string
- *                 format: binary
+ *               users:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
  *     responses:
  *       200:
  *         description: Success
@@ -712,7 +688,7 @@ router.get(
 router.put(
   "/:userid/image",
   // authMiddleware,
-  upload.single("profileImage"),
+  upload.single("users"),
   updateUserImage
 );
 

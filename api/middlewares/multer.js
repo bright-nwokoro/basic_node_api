@@ -11,6 +11,8 @@ import {
 import dotenv from "dotenv";
 dotenv.config();
 
+import User from "../model/user/index.js";
+
 const env = config.get("env_name");
 const s3Config = config.get("s3");
 
@@ -47,15 +49,19 @@ class S3MulterService {
         cb(null, { fieldName: file.fieldname });
       },
       acl: "public-read",
-      key: (req, file, cb) => {
+      key: async (req, file, cb) => {
+        const userId = req.body.userid;
+        const user = await User.findOne({ id: userId });
+
+        const id = userId && user ? userId : "undefined";
+
         const currentDate = Date.now();
         const date = new Date(currentDate);
         const dateString = date.toISOString().replace(/[\/\\:]/g, "_");
         const uniqueSuffix = dateString + "-" + Math.round(Math.random() * 1e9);
 
         const fullPath =
-          `${file.fieldname}/${uniqueSuffix}-` +
-          req.id +
+          `${file.fieldname}/${id}/${uniqueSuffix}` +
           path.extname(file.originalname);
 
         cb(null, fullPath);
@@ -90,9 +96,9 @@ class S3MulterService {
     const upload = multer({
       fileFilter: this.imageFileFilter,
       storage: this.getMulterS3Storage("test-user-images"),
-      limits: {
-        fileSize: 3000000,
-      },
+      // limits: {
+      //   fileSize: 3000000,
+      // },
     });
 
     return upload;

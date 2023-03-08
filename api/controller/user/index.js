@@ -33,9 +33,9 @@ export const createUser = async (req, res) => {
       });
     })
     .catch((err) => {
-      return res.status(500).json({
-        data: err.message,
-        message: "Unable to create new user",
+      return res.status(400).json({
+        data: "",
+        message: err.message,
       });
     });
 };
@@ -69,7 +69,7 @@ export const fetchUserProfileByID = async (req, res) => {
     return res.status(200).json({
       data: {
         fullName: user.fullName,
-        imageURI: user.profileImage,
+        imageURI: user.profileImages,
       },
       message: "Summary of User profile retrieved successfully",
     });
@@ -109,19 +109,26 @@ export const updateUserProfileByID = async (req, res) => {
   const gender = req.body.gender;
   const dob = req.body.dob;
 
-  user.email = email ? email : user.email;
-  user.password = password ? password : user.password;
-  user.firstName = firstName ? firstName : user.firstName;
-  user.lastName = lastName ? lastName : user.lastName;
-  user.gender = gender ? gender : user.gender;
-  user.dob = dob ? dob : user.dob;
+  try {
+    user.email = email ? email : user.email;
+    user.password = password ? password : user.password;
+    user.firstName = firstName ? firstName : user.firstName;
+    user.lastName = lastName ? lastName : user.lastName;
+    user.gender = gender ? gender : user.gender;
+    user.dob = dob ? dob : user.dob;
 
-  await user.save().then((user) => {
-    return res.status(200).json({
-      data: user,
-      message: "User profile updated successfully",
+    await user.save().then((user) => {
+      return res.status(200).json({
+        data: user,
+        message: "User profile updated successfully",
+      });
     });
-  });
+  } catch (error) {
+    return res.status(400).json({
+      data: "",
+      message: error.message,
+    });
+  }
 };
 
 export const deleteUserProfileByID = async (req, res) => {
@@ -221,14 +228,14 @@ export const getUsers = async (req, res) => {
 };
 
 export const createUserImage = async (req, res) => {
-  const userId = req.params.userid;
-  const profileImage = req.file ? req.file.key : "";
+  const userId = req.body.userid;
+  const profileImages = req.files ? req.files.map((file) => file.key) : "";
 
   const user = await User.findOne({
     id: userId,
   });
 
-  if (!req.file) {
+  if (!req.files) {
     return res.status(400).json({
       data: "",
       message: "Unsupported Image format.",
@@ -242,11 +249,11 @@ export const createUserImage = async (req, res) => {
     });
   }
 
-  user.profileImage = profileImage;
+  user.profileImages = profileImages;
   await user.save();
 
   return res.status(200).json({
-    data: req.file.key,
+    data: profileImages,
     message: "Image create successfully",
   });
 };
@@ -265,18 +272,18 @@ export const getUserImage = async (req, res) => {
     });
   }
 
-  if (!user.profileImage || user.profileImage.length < 0) {
+  if (!user.profileImages || user.profileImages.length < 0) {
     return res.status(404).json({
       data: "",
       message: "No image was found for this user",
     });
   }
 
-  const imageURL = await s3Service.generatePresignedUrl(user.profileImage);
+  const imageURL = await s3Service.generatePresignedUrl(user.profileImages);
 
   return res.status(200).json({
     data: {
-      imagekey: user.profileImage,
+      imagekey: user.profileImages,
       presignedurl: imageURL,
     },
     message: "Image retrieved successfully",
@@ -285,7 +292,8 @@ export const getUserImage = async (req, res) => {
 
 export const updateUserImage = async (req, res) => {
   const userId = req.body.userid;
-  const profileImage = req.file ? req.file.key : "";
+  const previousImageKey = req.body.previousimagekey;
+  const newImageKey = req.file ? req.file.key : null;
 
   const user = await User.findOne({
     id: userId,
@@ -305,16 +313,25 @@ export const updateUserImage = async (req, res) => {
     });
   }
 
-  if (req.file && user.profileImage) {
-    s3Service.deletes3Bucket(user.profileImage);
+  if (user.profileImages) {
+    const index = user.profileImages.findIndex(
+      (key) => key === previousImageKey
+    );
+    if (index !== -1) {
+      s3Service.deletes3Bucket([previousImageKey]);
+      user.profileImages.splice(index, 1, newImageKey);
+    } else {
+      user.profileImages.push(newImageKey);
+    }
+  } else {
+    user.profileImages = [newImageKey];
   }
 
-  user.profileImage = profileImage;
   await user.save();
 
   return res.status(200).json({
-    data: req.file.key,
-    message: "Image create successfully",
+    data: newImageKey,
+    message: "Image updated successfully",
   });
 };
 
@@ -332,10 +349,10 @@ export const deleteUserImage = async (req, res) => {
     });
   }
 
-  if (user.profileImage) {
-    s3Service.deletes3Bucket(user.profileImage);
+  if (user.profileImages) {
+    s3Service.deletes3Bucket(`users/${userId}`);
 
-    user.profileImage = "";
+    user.profileImages = "";
     await user.save();
 
     return res.status(204).json({

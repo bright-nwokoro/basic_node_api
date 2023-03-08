@@ -9,8 +9,14 @@ const userSchema = new mongoose.Schema(
       default: uuidv4().replace(/-/g, "").toLowerCase(),
       unique: true,
     },
-    firstName: String,
-    lastName: String,
+    firstName: {
+      type: String,
+      required: [true, "Please enter your first name"],
+    },
+    lastName: {
+      type: String,
+      required: [true, "Please enter your last name"],
+    },
     gender: {
       type: String,
       enum: ["Male", "Female", "Other", "Not_Entered"],
@@ -19,16 +25,35 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       unique: true,
-      match: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-      required: true,
+      match: [
+        /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+        "Please enter a valid email address",
+      ],
+      required: [true, "Please enter an email address"],
     },
     password: {
       type: String,
-      required: true,
-      minLength: 8,
+      required: [true, "Please enter a password"],
+      minLength: [8, "Password must be at least 8 characters long"],
     },
-    profileImage: String,
-    dob: String,
+    profileImages: [String],
+    dob: {
+      type: String,
+      validate: {
+        validator: function (value) {
+          const dobRegex = /^\d{4}-\d{2}-\d{2}$/;
+          return dobRegex.test(value);
+        },
+        message: (props) =>
+          `${props.value} is not a valid date of birth! Please use format YYYY-MM-DD.`,
+      },
+    },
+    dogIds: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Dog",
+      },
+    ],
     lastLoginedIn: Date,
   },
   { timestamps: true }

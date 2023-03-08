@@ -16,7 +16,7 @@ import S3Service from "./api/utils/s3/index.js";
 // import loginRoutes from "./api/routes/auth/login.js";
 import userRoutes from "./api/routes/user/index.js";
 import dogRoutes from "./api/routes/dog/index.js";
-// import imagesRoutes from "./api/routes/images/index.js";
+import imagesRoutes from "./api/routes/images/index.js";
 
 import swaggerOptions from "./api/docs/swagger-definitions/index.js";
 
@@ -175,7 +175,7 @@ app.use("/docs/:id", swaggerUi.serve, (req, res) => {
 app.use("/user", userRoutes);
 app.use("/dog", dogRoutes);
 // app.use("/login", loginRoutes);
-// app.use("/images", imagesRoutes);
+app.use("/images", imagesRoutes);
 
 process.on("SIGINT", () => {
   endServer("SIGINT");
