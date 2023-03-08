@@ -7,6 +7,8 @@ import cors from "cors";
 import { createTerminus } from "@godaddy/terminus";
 import swaggerUi from "swagger-ui-express";
 import swaggerJsdoc from "swagger-jsdoc";
+import migrateMongo from "migrate-mongo";
+const { runMigrations } = migrateMongo;
 
 import S3MulterService from "./api/middlewares/multer.js";
 import S3Service from "./api/utils/s3/index.js";
@@ -33,6 +35,16 @@ const startServer = async () => {
     console.log(`Server is running on port: ${port}`);
   });
 
+  // Define the "up" migration function to add a "username" field to the "users" collection
+  async function up(db) {
+    await db.collection("users").updateMany({}, { $set: { username: "" } });
+  }
+
+  // Define the "down" migration function to remove the "username" field from the "users" collection
+  async function down(db) {
+    await db.collection("users").updateMany({}, { $unset: { username: "" } });
+  }
+
   // bucket exist
 
   switch (env) {
@@ -42,8 +54,11 @@ const startServer = async () => {
           useNewUrlParser: true,
           useUnifiedTopology: true,
         })
-        .then(() => {
+        .then(async () => {
           console.log("dev db connected");
+
+          await up(mongoose.connection.db);
+          console.log("Migration complete");
         });
       break;
     case "staging":
