@@ -185,9 +185,11 @@ export const getUsers = async (req, res) => {
 
     // handle filtering
     if (age) {
-      const birthYear = new Date().getFullYear() - age;
-      filters.push({ dob: { $lte: `${birthYear}-12-31` } });
-      filters.push({ dob: { $gte: `${birthYear}-01-01` } });
+      const birthYear = new Date().getFullYear() - parseInt(age);
+      const minDate = new Date(birthYear, 0, 1).toISOString().split("T")[0];
+      const maxDate = new Date(birthYear, 11, 31).toISOString().split("T")[0];
+      filters.push({ dob: { $lte: maxDate } });
+      filters.push({ dob: { $gte: minDate } });
     }
     if (gender) {
       filters.push({ gender: { $in: gender.split(",") } });
@@ -205,6 +207,11 @@ export const getUsers = async (req, res) => {
           { lastName: new RegExp(fullName, "i") },
         ],
       });
+    }
+
+    // add filters to query
+    if (filters.length > 0) {
+      query["$and"] = filters;
     }
 
     // execute the query

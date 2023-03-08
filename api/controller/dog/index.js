@@ -2,7 +2,7 @@ import Dog from "../../model/dog/index.js";
 import User from "../../model/user/index.js";
 import S3Service from "../../utils/s3/index.js";
 
-const s3Service = S3Service();
+const s3Service = new S3Service();
 
 export const newDog = async (req, res) => {
   const userId = req.body.userid;
