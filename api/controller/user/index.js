@@ -1,5 +1,6 @@
 import User from "../../model/user/index.js";
 import S3Service from "../../utils/s3/index.js";
+// import { imageQueue, handleImageUpload } from "../../utils/tasks/image_task.js";
 
 const s3Service = new S3Service();
 
@@ -165,8 +166,8 @@ export const deleteUserProfileByID = async (req, res) => {
 export const getUsers = async (req, res) => {
   try {
     const {
-      page = 1,
-      limit = 10,
+      page,
+      limit,
       sortField = "createdAt",
       sortDirection = "desc",
       age,
@@ -216,30 +217,18 @@ export const getUsers = async (req, res) => {
 
     // execute the query
     const [users, totalCount] = await Promise.all([
-      User.find(query).skip(skip).limit(limit).sort(sort),
+      User.find(query, 'firstName lastName profileImages').skip(skip).limit(limit).sort(sort),
       User.countDocuments(query),
     ]);
 
     // calculate page and pageCount
     const pageCount = Math.ceil(totalCount / limit);
 
-    let data;
-    if (req.query.format === "summary") {
-      data = users.map((user) => {
-        return {
-          fullName: `${user.firstName} ${user.lastName}`,
-          imageKeys: user.profileImages,
-        };
-      });
-    } else {
-      data = users;
-    }
-
     res.status(200).json({
       page,
       pageCount,
       totalCount,
-      data,
+      users,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -260,6 +249,27 @@ export const createUserImage = async (req, res) => {
       message: "Unsupported Image format.",
     });
   }
+
+  // if (req.files) {
+  //   const { imageFiles } = req.files;
+
+  //   const promises = imageFiles.map((file) => {
+  //     return imageQueue.add("imageUpload", {
+  //       key: file.key,
+  //       entity: "users",
+  //       id: user.id,
+  //     });
+  //   });
+
+  //   Promise.all(promises)
+  //     .then(() => {
+  //       res.status(200).json({ message: "Images are being processed" });
+  //     })
+  //     .catch((err) => {
+  //       console.error(err);
+  //       res.status(500).json({ error: "Failed to process images" });
+  //     });
+  // }
 
   if (!user) {
     return res.status(400).json({

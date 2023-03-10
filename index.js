@@ -202,13 +202,13 @@ app.use("/dog", dogRoutes);
 // app.use("/login", loginRoutes);
 app.use("/images", imagesRoutes);
 
-// process.on("SIGINT", () => {
-//   endServer();
-// });
+process.on("SIGINT", () => {
+  endServer();
+});
 
-// process.on("SIGTERM", () => {
-//   endServer();
-// });
+process.on("SIGTERM", () => {
+  endServer();
+});
 
 startServer();
 export default app;

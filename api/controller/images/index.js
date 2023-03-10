@@ -28,7 +28,7 @@ const s3Service = new S3Service();
 // };
 
 export const fetchImageByKey = async (req, res) => {
-  const key = req.params.key;
+  const key = req.query.key;
 
   const imageURL = await s3Service.generatePresignedUrl(key);
 

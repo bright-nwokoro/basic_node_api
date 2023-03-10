@@ -16,6 +16,8 @@ import {
   deleteUserImage,
 } from "../../controller/user/index.js";
 
+// import { handleImageUpload, imageQueue } from "../../utils/tasks/image_task.js";
+
 const s3Service = new S3MulterService();
 const upload = s3Service.getMulterUploadMiddleware();
 
@@ -77,6 +79,14 @@ router.get(
  *       - User
  *     parameters:
  *       - in: query
+ *         name: page
+ *         description: Page Number
+ *         type: string
+ *       - in: query
+ *         name: limit
+ *         description: Number of Documents to have in one page
+ *         type: string
+ *       - in: query
  *         name: age
  *         description: Age
  *         type: string
@@ -95,10 +105,6 @@ router.get(
  *       - in: query
  *         name: fullName
  *         description: Full Name
- *         type: string
- *       - in: query
- *         name: format
- *         description: Summary/Full
  *         type: string
  *     responses:
  *       200:
@@ -198,7 +204,7 @@ router.get(
 //  *   get:
 //  *     summary: GET user
 //  *     description: GET new user
- 
+
 //  *     tags:
 //  *       - User
 //  *     parameters:
@@ -567,6 +573,7 @@ router.delete(
  *               data: {}
  *               message: Custom error message
  * */
+// imageQueue.process("imageUpload", handleImageUpload);
 router.post("/:userid/image", upload.array("users"), createUserImage);
 
 /**

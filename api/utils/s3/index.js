@@ -31,6 +31,10 @@ class S3Service {
     this.s3 = s3;
   }
 
+  get client() {
+    return this.s3;
+  }
+
   createS3Bucket = () => {
     this.s3.createBucket({ Bucket: bucketName }, function (err, data) {
       if (err) {

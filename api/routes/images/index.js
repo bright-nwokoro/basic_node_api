@@ -135,7 +135,7 @@ const router = express.Router();
  *     tags:
  *       - Image
  *     parameters:
- *       - in: path
+ *       - in: query
  *         name: key
  *         description: Key
  *         type: string
@@ -199,7 +199,7 @@ const router = express.Router();
  *               message: Not Found
  * */
 router.get(
-  "/:key",
+  "/",
   // authMiddleware,
   fetchImageByKey
 );
