@@ -6,7 +6,7 @@ import S3MulterService from "../../middlewares/multer.js";
 import {
   createUser,
   getAllUser,
-  fetchUserProfileByID,
+  // fetchUserProfileByID,
   updateUserProfileByID,
   deleteUserProfileByID,
   getUsers,

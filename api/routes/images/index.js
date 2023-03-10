@@ -2,7 +2,7 @@ import express from "express";
 
 import S3MulterService from "../../middlewares/multer.js";
 
-import { authMiddleware } from "../../middlewares/auth/index.js";
+// import { authMiddleware } from "../../middlewares/auth/index.js";
 import {
   //   createImage,
   fetchImageByKey,

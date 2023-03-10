@@ -12,6 +12,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import User from "../model/user/index.js";
+import Dog from "../model/dog/index.js";
 
 const env = config.get("env_name");
 const s3Config = config.get("s3");
@@ -54,7 +55,10 @@ class S3MulterService {
         const userId = req.body.userid;
         const user = await User.findOne({ id: userId });
 
-        const id = userId && user ? userId : "undefined";
+        const dogId = req.body.dogid;
+        const dog = await Dog.findOne({ id: dogId });
+
+        const id = userId ? (userId && user ? userId : "undefined") : (dogId && dog ? dogId : "undefined");
 
         const currentDate = Date.now();
         const date = new Date(currentDate);

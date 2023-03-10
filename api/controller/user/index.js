@@ -306,12 +306,6 @@ export const getUserImage = async (req, res) => {
     imageURLs.push(await s3Service.generatePresignedUrl(image));
   }
 
-  // user.profileImages.map(async (image) => {
-  //   imageURLs.push(await s3Service.generatePresignedUrl(image));
-  // });
-
-  // const imageURL = await s3Service.generatePresignedUrl(user.profileImages);
-
   return res.status(200).json({
     data: {
       imagekey: user.profileImages,

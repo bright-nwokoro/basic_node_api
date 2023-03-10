@@ -212,12 +212,12 @@ export const getDogImage = async (req, res) => {
     });
   }
 
+  const images = dog.profileImages;
   const imageURLs = [];
 
-  dog.profileImages.map(async (image) => {
+  for (const image of images) {
     imageURLs.push(await s3Service.generatePresignedUrl(image));
-  });
-  // const imageURL = await s3Service.generatePresignedUrl(dog.profileImages);
+  }
 
   return res.status(200).json({
     data: {

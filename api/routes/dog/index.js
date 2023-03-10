@@ -486,7 +486,7 @@ router.delete(
  *               - dogid
  *               - dogs
  *             properties:
- *               userid:
+ *               dogid:
  *                 type: string
  *               dogs:
  *                 type: array
