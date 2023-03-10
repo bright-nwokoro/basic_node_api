@@ -1,7 +1,11 @@
 import jwt from "jsonwebtoken";
+import config from "config";
 import dotenv from 'dotenv';
 
 dotenv.config();
+
+// const env = config.get("env_name");
+const jwtConfig = config.get("jwt");
 
 export const authenticateUserToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
@@ -14,7 +18,7 @@ export const authenticateUserToken = (req, res, next) => {
     });
   }
 
-  jwt.verify(token, process.env.JWT_SECRET, async (err, _id) => {
+  jwt.verify(token, jwtConfig.jwt_secret, async (err, _id) => {
     if (err) {
       return res.status(401).json({
         data: "",
@@ -32,7 +36,7 @@ export const authenticateUserToken = (req, res, next) => {
 
 export const generateUserAccessToken = async (user) => {
   return {
-    accessToken: jwt.sign(user, process.env.JWT_SECRET, {
+    accessToken: jwt.sign(user, jwtConfig.jwt_secret, {
       expiresIn: "1w",
       issuer: "brightnwokoro.com",
     }),

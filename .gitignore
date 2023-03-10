@@ -4,3 +4,4 @@ migrations
 volume/
 data/
 mongo_data/
+config

@@ -21,13 +21,6 @@ WORKDIR /usr/src/app
 COPY --from=build /usr/src/app ./
 COPY --from=build /usr/src/app/package.json ./
 
-# Set environment variabless
-ENV S3_BUCKET_NAME=test-user-images
-ENV AWS_ACCESS_KEY_ID=test
-ENV AWS_SECRET_ACCESS_KEY=test
-ENV JWT_SECRET=myscret1234
-# ENV AWS_BUCKET_NAME=test-user-images
-
 # Expose port
 EXPOSE 5200
 

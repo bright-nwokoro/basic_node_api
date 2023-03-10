@@ -1,8 +1,7 @@
 import AWS from "aws-sdk";
 import config from "config";
-import dotenv from "dotenv";
-
-dotenv.config();
+// import dotenv from "dotenv";
+// dotenv.config();
 
 const env = config.get("env_name");
 const s3Config = config.get("s3");
@@ -11,13 +10,13 @@ const localstackS3Options = {
   endpoint: s3Config.s3_endpoint,
   s3ForcePathStyle: true,
   region: s3Config.region,
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  accessKeyId: s3Config.aws_access_key_id,
+  secretAccessKey: s3Config.aws_secret_access_key,
 };
 
 const s3CloudOptions = {
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  accessKeyId: s3Config.aws_access_key_id,
+  secretAccessKey: s3Config.aws_secret_access_key,
   region: s3Config.region,
 };
 

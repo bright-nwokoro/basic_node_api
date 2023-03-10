@@ -8,8 +8,8 @@ import {
   DeleteObjectsCommand,
 } from "@aws-sdk/client-s3";
 
-import dotenv from "dotenv";
-dotenv.config();
+// import dotenv from "dotenv";
+// dotenv.config();
 
 import User from "../model/user/index.js";
 import Dog from "../model/dog/index.js";
@@ -22,15 +22,15 @@ const localstackS3Options = {
   forcePathStyle: true,
   region: s3Config.region,
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    accessKeyId: s3Config.aws_access_key_id,
+    secretAccessKey: s3Config.aws_secret_access_key,
   },
 };
 const s3CloudOptions = {
   region: s3Config.region,
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY,
-    secretAccessKey: process.env.AWS_SECRET_KEY,
+    accessKeyId: s3Config.aws_access_key_id,
+    secretAccessKey: s3Config.aws_secret_access_key,
   },
 };
 
