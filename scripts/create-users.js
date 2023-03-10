@@ -12,10 +12,21 @@ mongoose.connect(dbURI, {
 const createUsers = async () => {
   try {
     const users = [
-      { firstName: "Alice", email: "alice@example.com", password: "password1" },
-      { firstName: "Bob", email: "bob@example.com", password: "password2" },
+      {
+        firstName: "Alice",
+        lastName: "Hey",
+        email: "alice@example.com",
+        password: "password1",
+      },
+      {
+        firstName: "Bob",
+        lastName: "Hi",
+        email: "bob@example.com",
+        password: "password2",
+      },
       {
         firstName: "Charlie",
+        lastName: "Hello",
         email: "charlie@example.com",
         password: "password3",
       },

@@ -43,6 +43,18 @@ class S3Service {
     });
   };
 
+  checkS3Connection = () => {
+    return new Promise((resolve, reject) => {
+      this.s3.listBuckets((err, data) => {
+        if (err) {
+          reject("not ready");
+        } else {
+          resolve("ready");
+        }
+      });
+    });
+  };
+
   isS3BucketNameExist = () => {
     return new Promise((resolve, reject) => {
       this.s3.listBuckets((err, data) => {

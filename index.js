@@ -28,14 +28,15 @@ const app = express();
 
 const env = config.get("env_name");
 const port = config.get("server.port");
-const MONGODB_URI = config.get("db.uri");
+const dbConfig = config.get("db");
+
+const MONGODB_URI = dbConfig.uri;
 
 const startServer = async () => {
   const server = app.listen(port, "0.0.0.0", () => {
     console.log(`Server is running on port: ${port}`);
   });
 
-  // Define the "up" migration function to add a "username" field to the "users" collection
   async function up(db) {
     await db.collection("users").updateMany({}, { $set: { username: "" } });
   }
@@ -57,20 +58,32 @@ const startServer = async () => {
         .then(async () => {
           console.log("dev db connected");
 
-          await up(mongoose.connection.db);
-          console.log("Migration complete");
+          if (dbConfig.migrate_on_start) {
+            await up(mongoose.connection.db);
+            console.log("Dev Migration complete");
+          }
         });
       break;
     case "staging":
       mongoose.set("strictQuery", false);
-      mongoose.connect(MONGODB_URI).then(() => {
+      mongoose.connect(MONGODB_URI).then(async () => {
         console.log("staging db connected");
+
+        if (dbConfig.migrate_on_start) {
+          await up(mongoose.connection.db);
+          console.log("Staging Migration complete");
+        }
       });
       break;
     case "production":
       mongoose.set("strictQuery", false);
-      mongoose.connect(MONGODB_URI).then(() => {
+      mongoose.connect(MONGODB_URI).then(async () => {
         console.log("prodcution db connected");
+
+        if (dbConfig.migrate_on_start) {
+          await up(mongoose.connection.db);
+          console.log("Production Migration complete");
+        }
       });
       break;
   }
@@ -95,12 +108,6 @@ const startServer = async () => {
       console.log("Error: ", err);
     });
 
-  // const s3MulterService = new S3MulterService();
-  // s3MulterService.client;
-
-  // Call script to create migration file and run migrations
-  // createMigrationAndRunMigrations()
-
   const options = {
     // health check options
     healthChecks: {
@@ -119,13 +126,13 @@ const startServer = async () => {
     useExit0: false,
     sendFailuresDuringShutdown: true,
     beforeShutdown: async () => {
-      await closeConnection();
+      await endServer();
     },
     onSignal: async () => {
-      await closeConnection();
+      await endServer();
     },
     onShutdown: async () => {
-      await closeConnection();
+      await endServer();
     },
 
     // both
@@ -133,35 +140,38 @@ const startServer = async () => {
   };
 
   function healthCheck() {
-    return Promise.resolve("Service is healthy!");
-  }
+    const mongooseStatus =
+      mongoose.connection.readyState === 1 ? "ready" : "not ready";
 
-  async function closeConnection() {
-    // Perform some asynchronous task here, such as closing a database connection
-    await mongoose.connection.close();
+    const s3Status = s3Service.checkS3Connection();
+    if (mongooseStatus === "not ready" || s3Status === "not ready") {
+      // throw new Error("Some dependencies are not ready");
+
+      return Promise.resolve("Some dependencies are not ready");
+    }
+
+    return Promise.resolve("Service is healthy!");
   }
 
   createTerminus(server, options);
 };
 
-const endServer = async (signal) => {
-  console.log(`${signal} received. Shutting down...`);
+const endServer = async () => {
+  if (dbConfig.clear_db_on_close) {
+    await mongoose.connection.db.dropDatabase();
+  }
 
-  // Clear database
-  await mongoose.connection.db.dropDatabase();
   await mongoose.connection.close();
 
-  // Clear S3
-  if (env === "dev" || env === "staging") {
-    console.log(
-      `Deleting ${objects.Contents.length} objects from S3 bucket ${S3_BUCKET_NAME}...`
-    );
+  if (dbConfig.clear_bucket_on_close) {
+    console.log(`Deleting objects from S3 bucket ${S3_BUCKET_NAME}...`);
+
     const s3Service = new S3MulterService();
     s3Service.deleteAllObjects;
-
-    console.log("Server shutting down.");
-    process.exit(0);
   }
+
+  console.log("Server shutting down.");
+  process.exit(0);
 };
 
 app.use(bodyParser.json({ limit: "2mb" }));
@@ -192,13 +202,13 @@ app.use("/dog", dogRoutes);
 // app.use("/login", loginRoutes);
 app.use("/images", imagesRoutes);
 
-process.on("SIGINT", () => {
-  endServer("SIGINT");
-});
+// process.on("SIGINT", () => {
+//   endServer();
+// });
 
-process.on("SIGTERM", () => {
-  endServer("SIGTERM");
-});
+// process.on("SIGTERM", () => {
+//   endServer();
+// });
 
 startServer();
 export default app;

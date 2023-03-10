@@ -85,7 +85,3 @@ const User = mongoose.model("User", userSchema);
 
 export const swaggerUserSchema = m2s(User);
 export default User;
-
-// pagination, gender, enums, filter
-// time utc
-// image endpoint
