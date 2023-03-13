@@ -1,6 +1,6 @@
 import User from "../../model/user/index.js";
 import S3Service from "../../utils/s3/index.js";
-// import { imageQueue, handleImageUpload } from "../../utils/tasks/image_task.js";
+import ImageUploader from "../../utils/tasks/image_task.js";
 
 const s3Service = new S3Service();
 
@@ -169,7 +169,7 @@ export const getUsers = async (req, res) => {
       page,
       limit,
       sortField = "createdAt",
-      sortDirection = "desc",
+      sortDirection,
       age,
       gender,
       lastLoggedInStart,
@@ -217,7 +217,10 @@ export const getUsers = async (req, res) => {
 
     // execute the query
     const [users, totalCount] = await Promise.all([
-      User.find(query, 'firstName lastName profileImages').skip(skip).limit(limit).sort(sort),
+      User.find(query, "firstName lastName profileImages")
+        .skip(skip)
+        .limit(limit)
+        .sort(sort),
       User.countDocuments(query),
     ]);
 
@@ -235,20 +238,25 @@ export const getUsers = async (req, res) => {
   }
 };
 
-export const createUserImage = async (req, res) => {
-  const userId = req.body.userid;
-  const profileImages = req.files ? req.files.map((file) => file.key) : "";
+export const createUserImage = async (req, res, next) => {
+  const imageUploader = new ImageUploader("UserImage", "users");
+  imageUploader.addImageToQueue(req, res, next)
+  // const userId = req.body.userid;
+  // const profileImages = req.files ? req.files.map((file) => file.key) : "";
 
-  const user = await User.findOne({
-    id: userId,
-  });
+  // const user = await User.findOne({
+  //   id: userId,
+  // });
 
-  if (!req.files) {
-    return res.status(400).json({
-      data: "",
-      message: "Unsupported Image format.",
-    });
-  }
+  // if (!req.files) {
+  //   return res.status(400).json({
+  //     data: "",
+  //     message: "Unsupported Image format.",
+  //   });
+  // }
+
+  // console.log("userid", userId);
+  // console.log(req)
 
   // if (req.files) {
   //   const { imageFiles } = req.files;
@@ -271,20 +279,20 @@ export const createUserImage = async (req, res) => {
   //     });
   // }
 
-  if (!user) {
-    return res.status(400).json({
-      data: "",
-      message: "Invalid user",
-    });
-  }
+  // if (!user) {
+  //   return res.status(400).json({
+  //     data: "",
+  //     message: "Invalid user",
+  //   });
+  // }
 
-  user.profileImages = profileImages;
-  await user.save();
+  // user.profileImages = profileImages;
+  // await user.save();
 
-  return res.status(200).json({
-    data: profileImages,
-    message: "Image create successfully",
-  });
+  // return res.status(200).json({
+  //   data: profileImages,
+  //   message: "Image create successfully",
+  // });
 };
 
 export const getUserImage = async (req, res) => {

@@ -1,4 +1,5 @@
 import express from "express";
+import multer from "multer";
 
 import S3MulterService from "../../middlewares/multer.js";
 
@@ -85,6 +86,10 @@ router.get(
  *       - in: query
  *         name: limit
  *         description: Number of Documents to have in one page
+ *         type: string
+ *       - in: query
+ *         name: sortDirection
+ *         description: Sort Direction
  *         type: string
  *       - in: query
  *         name: age
@@ -505,10 +510,10 @@ router.delete(
  *           schema:
  *             type: object
  *             required:
- *               - userid
+ *               - id
  *               - users
  *             properties:
- *               userid:
+ *               id:
  *                 type: string
  *               users:
  *                 type: array
@@ -574,7 +579,12 @@ router.delete(
  *               message: Custom error message
  * */
 // imageQueue.process("imageUpload", handleImageUpload);
-router.post("/:userid/image", upload.array("users"), createUserImage);
+router.post(
+  "/:userid/image",
+  // multer().array("users"),
+  // upload.array("users"),
+  createUserImage
+);
 
 /**
  * @swagger

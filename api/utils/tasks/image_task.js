@@ -1,79 +1,80 @@
-// import { createQueue } from "bullmq";
-import bull from "bullmq";
-
-// const { createQueue } = pkg;
-
+import { Queue, Worker } from "bullmq";
 import config from "config";
+import Redis from "ioredis";
+import multer from "multer";
+import stream from "stream";
+import path from "path";
 
-import S3Service from "../s3/index.js";
+import User from "../../model/user/index.js";
+import S3Service from "../../utils/s3/index.js";
 
 const s3Config = config.get("s3");
+const redisConfig = config.get("task.redis");
 
 const s3Service = new S3Service();
 const s3 = s3Service.client;
 
-export const imageQueue = bull.createQueue("imageQueue");
+const redisClient = new Redis({
+  host: redisConfig.host,
+  port: redisConfig.port,
+  maxRetriesPerRequest: null,
+});
 
-export const handleImageUpload = async (job) => {
-  const { key, entity, id } = job.data;
+class ImageUploader {
+  constructor(queueName, multerField) {
+    this.field = multerField;
+    this.queue = new Queue(queueName, {
+      connection: redisClient,
+    });
 
-  try {
-    const resizedImages = await Promise.all([
-      sharp(
-        await s3
-          .getObject({ Bucket: s3Config.aws_bucket_name, Key: key })
-          .promise()
-      )
-        .resize(200, 200)
-        .toBuffer(),
-      sharp(
-        await s3
-          .getObject({ Bucket: s3Config.aws_bucket_name, Key: key })
-          .promise()
-      )
-        .resize(1280, 720)
-        .toBuffer(),
-      sharp(
-        await s3
-          .getObject({ Bucket: s3Config.aws_bucket_name, Key: key })
-          .promise()
-      )
-        .resize(1920, 1080)
-        .toBuffer(),
-    ]);
+    // create a worker to handle the upload task
+    this.worker = new Worker(
+      queueName,
+      async (job) => {
+        const { file, id } = job.data;
 
-    const resizedKeys = [
-      {
-        key: `${entity}/${id}/${key.split("/")[1]}/thumbnails/${
-          key.split("/")[2]
-        }`,
-        buffer: resizedImages[0],
-      },
-      {
-        key: `${entity}/${id}/${key.split("/")[1]}/720p/${key.split("/")[2]}`,
-        buffer: resizedImages[1],
-      },
-      {
-        key: `${entity}/${id}/${key.split("/")[1]}/1080p/${key.split("/")[2]}`,
-        buffer: resizedImages[2],
-      },
-    ];
-
-    await Promise.all(
-      resizedKeys.map(async ({ key, buffer }) => {
-        await s3
-          .putObject({
+        try {
+          const s3Params = {
             Bucket: s3Config.aws_bucket_name,
-            Key: key,
-            Body: buffer,
-          })
-          .promise();
-      })
-    );
+            Key: `${this.field}/${id}` + Date.now().toString() + path.extname(file.originalname),
+            ACL: "public-read",
+          };
 
-    console.log("Images uploaded successfully");
-  } catch (err) {
-    console.error("Failed to resize and upload images", err);
-    throw err;
+          // Create a Readable stream of the uploaded file
+          const bufferStream = new stream.PassThrough();
+          bufferStream.end(file.buffer);
+
+          s3Params.Body = bufferStream; // Set the Body parameter to the Readable stream of the uploaded file
+
+          const result = await s3.upload(s3Params).promise();
+
+          console.log(`File uploaded successfully! URL: ${result.Location}`);
+        } catch (err) {
+          console.error(`Error uploading file: ${err}`);
+          throw err;
+        }
+      },
+      { connection: redisClient }
+    );
   }
-};
+
+  async addImageToQueue(req, res, next) {
+    multer().array(`${this.field}`)(req, res, async (err) => {
+      if (err) {
+        return next(err);
+      }
+
+      try {
+        const file = req.files;
+        const id = req.body.id;
+
+        const job = await this.queue.add("upload", { file, id });
+        res.status(200).send(`File uploaded successfully! Job ID: ${job.id}`);
+      } catch (err) {
+        next(err);
+      }
+    });
+  }
+}
+
+export default ImageUploader;

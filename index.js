@@ -151,6 +151,7 @@ const startServer = async () => {
     }
 
     return Promise.resolve("Service is healthy!");
+    // return Promise.resolve(mongooseStatus);
   }
 
   createTerminus(server, options);
