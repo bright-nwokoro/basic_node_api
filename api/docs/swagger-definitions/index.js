@@ -1,5 +1,8 @@
 import swaggerUserSchema from "../../model/user/index.js"
 import swaggerDogSchema from "../../model/dog/index.js"
+import config from "config";
+
+const env = config.get("env_name");
 
 const definition = {
   openapi: "3.0.2",
@@ -12,7 +15,7 @@ const definition = {
   },
   servers: [
     {
-      url: "http://localhost:5200",
+      url: env === "dev" ? "http://localhost:5200" : "http://localhost:5210",
       description: "Localhost",
     },
     {

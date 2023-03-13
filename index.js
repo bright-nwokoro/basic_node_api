@@ -171,7 +171,7 @@ const endServer = async () => {
     s3Service.deleteAllObjects;
   }
 
-  console.log("Server shutting down.");
+  console.log("Server shutting down...");
   process.exit(0);
 };
 

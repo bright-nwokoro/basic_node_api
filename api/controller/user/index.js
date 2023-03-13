@@ -238,61 +238,9 @@ export const getUsers = async (req, res) => {
   }
 };
 
-export const createUserImage = async (req, res, next) => {
+export const createUserImage = async (req, res) => {
   const imageUploader = new ImageUploader("UserImage", "users");
-  imageUploader.addImageToQueue(req, res, next)
-  // const userId = req.body.userid;
-  // const profileImages = req.files ? req.files.map((file) => file.key) : "";
-
-  // const user = await User.findOne({
-  //   id: userId,
-  // });
-
-  // if (!req.files) {
-  //   return res.status(400).json({
-  //     data: "",
-  //     message: "Unsupported Image format.",
-  //   });
-  // }
-
-  // console.log("userid", userId);
-  // console.log(req)
-
-  // if (req.files) {
-  //   const { imageFiles } = req.files;
-
-  //   const promises = imageFiles.map((file) => {
-  //     return imageQueue.add("imageUpload", {
-  //       key: file.key,
-  //       entity: "users",
-  //       id: user.id,
-  //     });
-  //   });
-
-  //   Promise.all(promises)
-  //     .then(() => {
-  //       res.status(200).json({ message: "Images are being processed" });
-  //     })
-  //     .catch((err) => {
-  //       console.error(err);
-  //       res.status(500).json({ error: "Failed to process images" });
-  //     });
-  // }
-
-  // if (!user) {
-  //   return res.status(400).json({
-  //     data: "",
-  //     message: "Invalid user",
-  //   });
-  // }
-
-  // user.profileImages = profileImages;
-  // await user.save();
-
-  // return res.status(200).json({
-  //   data: profileImages,
-  //   message: "Image create successfully",
-  // });
+  imageUploader.addImageToQueue(req, res);
 };
 
 export const getUserImage = async (req, res) => {

@@ -6,6 +6,7 @@ WORKDIR /usr/src/app
 
 # Copy package files and install dependencies
 COPY package.json ./
+RUN npm config set unsafe-perm true
 RUN npm install --parallel
 
 # Copy source code
